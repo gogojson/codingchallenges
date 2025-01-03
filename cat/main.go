@@ -45,8 +45,11 @@ func main() {
 			return
 		}
 		fmt.Println("---------------------------------")
-		fmt.Println(r)
-		return
+		if withLine {
+			fmt.Println(numberLine(r))
+		} else {
+			fmt.Println(r)
+		}
 	case runMode == "STDIN":
 		r := os.Stdin
 		b, err := io.ReadAll(r)
@@ -56,15 +59,7 @@ func main() {
 		}
 		fmt.Println("---------------------------------")
 		if withLine {
-			ss := strings.Split(string(b), "\n")
-			result := ""
-			for i, r := range ss {
-				r = strings.TrimSpace(r)
-				if r != "" {
-					result += fmt.Sprintf("%d. %s\n", i, r)
-				}
-			}
-			fmt.Println(result)
+			fmt.Println(numberLine(string(b)))
 		} else {
 			fmt.Println(string(b))
 		}
@@ -86,6 +81,9 @@ func args(a []string) (string, error) {
 	// Check the number of args
 	for _, v := range a {
 		// Check if v is a existing path
+		if v == "-n" {
+			continue
+		}
 		b, err := os.ReadFile(v)
 		if err != nil {
 			return "", err
@@ -93,5 +91,18 @@ func args(a []string) (string, error) {
 		result += string(b)
 	}
 	return result, nil
+
+}
+
+func numberLine(s string) string {
+	ss := strings.Split(s, "\n")
+	result := ""
+	for i, r := range ss {
+		r = strings.TrimSpace(r)
+		if r != "" {
+			result += fmt.Sprintf("%d. %s\n", i, r)
+		}
+	}
+	return result
 
 }
