@@ -60,7 +60,7 @@ func main() {
 			result := ""
 			for i, r := range ss {
 				r = strings.TrimSpace(r)
-				if r != "" a {
+				if r != "" {
 					result += fmt.Sprintf("%d. %s\n", i, r)
 				}
 			}
