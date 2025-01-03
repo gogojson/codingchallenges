@@ -1,38 +1,76 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
 )
 
+var (
+	runMode = ""
+)
+
 func main() {
-	var r io.Reader
-	f := "cat/test.txt"
-
-	if len(os.Args) == 2 {
-		f = os.Args[1]
+	// This program supports both Args and standard in, but needs at lest one
+	// Check if there are Args
+	if len(os.Args) > 1 {
+		slog.Info("there are input arguments set to args mode", slog.Any("os.Args", os.Args[1:]))
+		runMode = "ARG"
 	}
-	slog.Info("all flags parsed", slog.String("file", f))
-
-	//TODO: check if file exists
-	if _, err := os.Stat(f); os.IsNotExist(err) {
-		slog.Error(err.Error())
-		return
-	}
-	// b, err := os.ReadFile(f)
-	// if err != err {
-	// 	slog.Error("error while reading file")
-	// 	panic(err.Error())
-	// }
-	// slog.Info(string(b))
-
-	r = os.Stdin
-
-	b, err := io.ReadAll(r)
-	if err != nil {
-		slog.Error("error while reading")
+	// Check if there are Stdin
+	s, err := os.Stdin.Stat()
+	if err != err {
+		slog.Error("error while getting stdin stat")
 		panic(err.Error())
 	}
-	slog.Info(string(b))
+	if (s.Mode() & os.ModeCharDevice) == 0 {
+		slog.Info("Stdin is set")
+		runMode = "STDIN"
+	}
+
+	switch {
+	case runMode == "ARG":
+		r, err := args(os.Args[1:])
+		if err != nil {
+			slog.Error(fmt.Sprintf("Failed to read arg file %s", err.Error()))
+			return
+		}
+		fmt.Println("---------------------------------")
+		fmt.Println(r)
+		return
+	case runMode == "STDIN":
+		r := os.Stdin
+		b, err := io.ReadAll(r)
+		if err != nil {
+			slog.Error("error while reading")
+			panic(err.Error())
+		}
+		fmt.Println("---------------------------------")
+		fmt.Println(string(b))
+		return
+	default:
+		slog.Error("Need to provide either arguments or standard in in the terminal")
+		return
+	}
+}
+
+func stdin() {
+
+}
+
+func args(a []string) (string, error) {
+
+	result := ""
+	// Check the number of args
+	for _, v := range a {
+		// Check if v is a existing path
+		b, err := os.ReadFile(v)
+		if err != nil {
+			return "", err
+		}
+		result += string(b)
+	}
+	return result, nil
+
 }
