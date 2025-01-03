@@ -5,18 +5,26 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 )
 
 var (
-	runMode = ""
+	runMode  = ""
+	withLine = false
 )
 
 func main() {
 	// This program supports both Args and standard in, but needs at lest one
 	// Check if there are Args
 	if len(os.Args) > 1 {
-		slog.Info("there are input arguments set to args mode", slog.Any("os.Args", os.Args[1:]))
-		runMode = "ARG"
+		for _, v := range os.Args[1:] {
+			if v != "-n" {
+				slog.Info("there are input arguments set to args mode", slog.Any("os.Args", os.Args[1:]))
+				runMode = "ARG"
+			} else {
+				withLine = true
+			}
+		}
 	}
 	// Check if there are Stdin
 	s, err := os.Stdin.Stat()
@@ -47,7 +55,20 @@ func main() {
 			panic(err.Error())
 		}
 		fmt.Println("---------------------------------")
-		fmt.Println(string(b))
+		if withLine {
+			ss := strings.Split(string(b), "\n")
+			result := ""
+			for i, r := range ss {
+				r = strings.TrimSpace(r)
+				if r != "" a {
+					result += fmt.Sprintf("%d. %s\n", i, r)
+				}
+			}
+			fmt.Println(result)
+		} else {
+			fmt.Println(string(b))
+		}
+
 		return
 	default:
 		slog.Error("Need to provide either arguments or standard in in the terminal")
