@@ -18,8 +18,8 @@ func main() {
 	// Check if there are Args
 	if len(os.Args) > 1 {
 		for _, v := range os.Args[1:] {
-			if v != "-n" {
-				slog.Info("there are input arguments set to args mode", slog.Any("os.Args", os.Args[1:]))
+			if v != "-n" && v != "-" {
+				slog.Info("there are input arguments set to args mode", slog.Any("os.Args", v))
 				runMode = "ARG"
 			} else {
 				withLine = true
@@ -81,7 +81,7 @@ func args(a []string) (string, error) {
 	// Check the number of args
 	for _, v := range a {
 		// Check if v is a existing path
-		if v == "-n" {
+		if v == "-n" || v == "-" {
 			continue
 		}
 		b, err := os.ReadFile(v)
@@ -99,9 +99,10 @@ func numberLine(s string) string {
 	result := ""
 	for i, r := range ss {
 		r = strings.TrimSpace(r)
-		if r != "" {
-			result += fmt.Sprintf("%d. %s\n", i, r)
+		if r == "" && i == len(ss)-1 {
+			continue
 		}
+		result += fmt.Sprintf("%d. %s\n", i, r)
 	}
 	return result
 
